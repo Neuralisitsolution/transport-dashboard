@@ -9,22 +9,26 @@ export async function GET(
     const { id } = await params;
 
     // Try MongoDB first
-    if (process.env.MONGODB_URI && !process.env.MONGODB_URI.includes('YOUR_')) {
+    const mongoUri = process.env.MONGODB_URI || '';
+    if (mongoUri && mongoUri.startsWith('mongodb')) {
       try {
         const { connectDB } = await import('@/lib/mongodb');
         const Job = (await import('@/models/Job')).default;
         await connectDB();
 
         const job = await Job.findOne({
-          $or: [{ slug: id }, { _id: id.match(/^[0-9a-fA-F]{24}$/) ? id : undefined }],
+          $or: [
+            { slug: id },
+            ...(id.match(/^[0-9a-fA-F]{24}$/) ? [{ _id: id }] : []),
+          ],
         }).lean();
 
         if (job) {
           await Job.updateOne({ _id: job._id }, { $inc: { views: 1 } });
           return NextResponse.json({ job });
         }
-      } catch (dbError) {
-        console.warn('MongoDB unavailable, using sample data:', dbError);
+      } catch (err) {
+        console.warn('MongoDB unavailable:', (err as Error).message);
       }
     }
 
@@ -45,7 +49,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    if (!process.env.MONGODB_URI || process.env.MONGODB_URI.includes('YOUR_')) {
+    const mongoUri = process.env.MONGODB_URI || '';
+    if (!mongoUri || !mongoUri.startsWith('mongodb')) {
       return NextResponse.json({ error: 'MongoDB not configured' }, { status: 503 });
     }
     const { connectDB } = await import('@/lib/mongodb');
@@ -70,7 +75,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    if (!process.env.MONGODB_URI || process.env.MONGODB_URI.includes('YOUR_')) {
+    const mongoUri = process.env.MONGODB_URI || '';
+    if (!mongoUri || !mongoUri.startsWith('mongodb')) {
       return NextResponse.json({ error: 'MongoDB not configured' }, { status: 503 });
     }
     const { connectDB } = await import('@/lib/mongodb');

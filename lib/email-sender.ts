@@ -78,7 +78,7 @@ export async function sendJobAlert(
 
   try {
     await transporter.sendMail({
-      from: `"NaukriAlert AI" <${process.env.SMTP_USER}>`,
+      from: process.env.SMTP_FROM || `"NaukriAlert AI" <${process.env.SMTP_USER}>`,
       to,
       subject: `${jobs.length} New Govt Jobs - NaukriAlert Daily Digest`,
       html,
@@ -117,7 +117,7 @@ export async function sendDeadlineReminder(
 
   try {
     await transporter.sendMail({
-      from: `"NaukriAlert AI" <${process.env.SMTP_USER}>`,
+      from: process.env.SMTP_FROM || `"NaukriAlert AI" <${process.env.SMTP_USER}>`,
       to,
       subject: `URGENT: ${job.title} - Application Deadline Approaching!`,
       html,
