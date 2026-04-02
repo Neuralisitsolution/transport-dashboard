@@ -1,25 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectDB } from '@/lib/mongodb';
-import Job from '@/models/Job';
+import { SAMPLE_JOBS } from '@/lib/sample-data';
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await connectDB();
     const { id } = await params;
 
-    const job = await Job.findOne({
-      $or: [{ slug: id }, { _id: id.match(/^[0-9a-fA-F]{24}$/) ? id : undefined }],
-    }).lean();
+    // Try MongoDB first
+    if (process.env.MONGODB_URI && !process.env.MONGODB_URI.includes('YOUR_')) {
+      try {
+        const { connectDB } = await import('@/lib/mongodb');
+        const Job = (await import('@/models/Job')).default;
+        await connectDB();
 
+        const job = await Job.findOne({
+          $or: [{ slug: id }, { _id: id.match(/^[0-9a-fA-F]{24}$/) ? id : undefined }],
+        }).lean();
+
+        if (job) {
+          await Job.updateOne({ _id: job._id }, { $inc: { views: 1 } });
+          return NextResponse.json({ job });
+        }
+      } catch (dbError) {
+        console.warn('MongoDB unavailable, using sample data:', dbError);
+      }
+    }
+
+    // Fallback to sample data
+    const job = SAMPLE_JOBS.find((j) => j.slug === id || j._id === id);
     if (!job) {
       return NextResponse.json({ error: 'Job not found' }, { status: 404 });
     }
-
-    await Job.updateOne({ _id: job._id }, { $inc: { views: 1 } });
-
     return NextResponse.json({ job });
   } catch (error) {
     console.error('GET /api/jobs/[id] error:', error);
@@ -32,6 +45,11 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    if (!process.env.MONGODB_URI || process.env.MONGODB_URI.includes('YOUR_')) {
+      return NextResponse.json({ error: 'MongoDB not configured' }, { status: 503 });
+    }
+    const { connectDB } = await import('@/lib/mongodb');
+    const Job = (await import('@/models/Job')).default;
     await connectDB();
     const { id } = await params;
     const body = await request.json();
@@ -40,7 +58,6 @@ export async function PUT(
     if (!job) {
       return NextResponse.json({ error: 'Job not found' }, { status: 404 });
     }
-
     return NextResponse.json({ job });
   } catch (error) {
     console.error('PUT /api/jobs/[id] error:', error);
@@ -53,6 +70,11 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    if (!process.env.MONGODB_URI || process.env.MONGODB_URI.includes('YOUR_')) {
+      return NextResponse.json({ error: 'MongoDB not configured' }, { status: 503 });
+    }
+    const { connectDB } = await import('@/lib/mongodb');
+    const Job = (await import('@/models/Job')).default;
     await connectDB();
     const { id } = await params;
 
