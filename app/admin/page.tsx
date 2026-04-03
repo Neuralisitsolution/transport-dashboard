@@ -63,6 +63,8 @@ export default function AdminPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [fetching, setFetching] = useState(false);
+  const [fetchResult, setFetchResult] = useState<string | null>(null);
 
   const handleLogin = (e: FormEvent) => {
     e.preventDefault();
@@ -239,6 +241,47 @@ export default function AdminPage() {
         >
           Logout
         </button>
+      </div>
+
+      {/* Fetch Live Jobs */}
+      <div className="mb-6 card bg-gradient-to-r from-primary-50 to-secondary-50 border-primary-200">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h3 className="font-bold text-gray-900">Fetch Live Jobs from Sources</h3>
+            <p className="text-sm text-gray-600">Scrape sarkariresult.com, freejobalert.com & more. Uses Gemini AI to process data.</p>
+          </div>
+          <button
+            onClick={async () => {
+              setFetching(true);
+              setFetchResult(null);
+              try {
+                const res = await fetch('/api/cron/fetch-jobs?manual=true');
+                const data = await res.json();
+                setFetchResult(`Done! ${data.newJobs || 0} new jobs added, ${data.duplicates || 0} duplicates, ${data.errors || 0} errors.`);
+                // Refresh job list
+                const refreshRes = await fetch('/api/jobs');
+                if (refreshRes.ok) {
+                  const d = await refreshRes.json();
+                  setJobs(d.jobs || []);
+                  setStats(prev => ({ ...prev, totalJobs: (d.jobs || []).length }));
+                }
+              } catch (err) {
+                setFetchResult('Fetch failed: ' + (err as Error).message);
+              } finally {
+                setFetching(false);
+              }
+            }}
+            disabled={fetching}
+            className="btn-primary whitespace-nowrap"
+          >
+            {fetching ? 'Fetching... (may take 1-2 min)' : 'Fetch Live Jobs Now'}
+          </button>
+        </div>
+        {fetchResult && (
+          <div className="mt-3 rounded-lg bg-white p-3 text-sm text-gray-700 border">
+            {fetchResult}
+          </div>
+        )}
       </div>
 
       {/* Message */}
