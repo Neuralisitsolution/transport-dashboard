@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  PRIVATE_MEMBER
+}
+
+model User {
+  id            String         @id @default(cuid())
+  name          String
+  email         String         @unique
+  password      String
+  role          Role           @default(PRIVATE_MEMBER)
+  phone         String?
+  createdAt     DateTime       @default(now())
+  privateMember PrivateMember?
+}
+
+model Lorry {
+  id                 String           @id @default(cuid())
+  registrationNumber String           @unique
+  driverName         String
+  isActive           Boolean          @default(true)
+  createdAt          DateTime         @default(now())
+  commercialTrips    CommercialTrip[]
+  privateTrips       PrivateTrip[]
+}
+
+model Crusher {
+  id          String               @id @default(cuid())
+  name        String
+  contactName String?
+  phone       String?
+  address     String?
+  notes       String?
+  createdAt   DateTime             @default(now())
+  credits     CrusherCreditEntry[]
+  payments    CrusherPayment[]
+}
+
+model CrusherCreditEntry {
+  id          String   @id @default(cuid())
+  crusherId   String
+  crusher     Crusher  @relation(fields: [crusherId], references: [id])
+  date        DateTime
+  material    String
+  quantity    Float
+  unit        String
+  ratePerUnit Float
+  totalAmount Float
+  notes       String?
+  createdAt   DateTime @default(now())
+}
+
+model CrusherPayment {
+  id              String   @id @default(cuid())
+  crusherId       String
+  crusher         Crusher  @relation(fields: [crusherId], references: [id])
+  date            DateTime
+  amount          Float
+  paymentMode     String
+  referenceNumber String?
+  notes           String?
+  createdAt       DateTime @default(now())
+}
+
+model CommercialClient {
+  id          String             @id @default(cuid())
+  companyName String
+  contactName String?
+  phone       String?
+  address     String?
+  notes       String?
+  isActive    Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+  trips       CommercialTrip[]
+  payments    CommercialPayment[]
+}
+
+model CommercialTrip {
+  id               String           @id @default(cuid())
+  clientId         String
+  client           CommercialClient @relation(fields: [clientId], references: [id])
+  lorryId          String
+  lorry            Lorry            @relation(fields: [lorryId], references: [id])
+  date             DateTime
+  material         String
+  quantity         Float
+  unit             String
+  ratePerUnit      Float
+  totalAmount      Float
+  slipNumber       String?
+  slipImageUrl     String?
+  slipImageDriveId String?
+  notes            String?
+  createdAt        DateTime         @default(now())
+}
+
+model CommercialPayment {
+  id              String           @id @default(cuid())
+  clientId        String
+  client          CommercialClient @relation(fields: [clientId], references: [id])
+  date            DateTime
+  amount          Float
+  paymentMode     String
+  referenceNumber String?
+  notes           String?
+  createdAt       DateTime         @default(now())
+}
+
+model PrivateMember {
+  id        String           @id @default(cuid())
+  userId    String?          @unique
+  user      User?            @relation(fields: [userId], references: [id])
+  name      String
+  phone     String?
+  address   String?
+  notes     String?
+  isActive  Boolean          @default(true)
+  createdAt DateTime         @default(now())
+  trips     PrivateTrip[]
+  payments  PrivatePayment[]
+}
+
+model PrivateTrip {
+  id               String        @id @default(cuid())
+  memberId         String
+  member           PrivateMember @relation(fields: [memberId], references: [id])
+  lorryId          String
+  lorry            Lorry         @relation(fields: [lorryId], references: [id])
+  date             DateTime
+  material         String
+  quantity         Float
+  unit             String
+  ratePerUnit      Float
+  totalAmount      Float
+  slipNumber       String?
+  slipImageUrl     String?
+  slipImageDriveId String?
+  notes            String?
+  createdAt        DateTime      @default(now())
+}
+
+model PrivatePayment {
+  id                String        @id @default(cuid())
+  memberId          String
+  member            PrivateMember @relation(fields: [memberId], references: [id])
+  date              DateTime
+  amount            Float
+  paymentMode       String
+  referenceNumber   String?
+  screenshotUrl     String?
+  screenshotDriveId String?
+  submittedByMember Boolean       @default(false)
+  verifiedByOwner   Boolean       @default(false)
+  notes             String?
+  createdAt         DateTime      @default(now())
+}

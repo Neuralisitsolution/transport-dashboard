@@ -1,35 +1,31 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import { Toaster } from 'react-hot-toast';
+import AuthProvider from '@/components/AuthProvider';
 
 export const metadata: Metadata = {
-  title: 'NaukriAlert AI - Government Job Alerts India | Sarkari Naukri 2025',
-  description:
-    'India\'s most comprehensive AI-powered government job alert platform. Get real-time notifications for SSC, UPSC, Railway, Banking, Defence, State PSC and all sarkari naukri. Never miss a government job opportunity.',
-  keywords:
-    'sarkari naukri 2025, government jobs, sarkari result, SSC recruitment, bank jobs, railway jobs, defence jobs, state government jobs, UPSC, IBPS, NDA, CDS',
-  openGraph: {
-    title: 'NaukriAlert AI - Government Job Alerts India',
-    description: 'India\'s #1 AI-powered government job alert platform. Real-time sarkari naukri alerts.',
-    siteName: 'NaukriAlert AI',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'NaukriAlert AI - Government Job Alerts India',
-    description: 'India\'s #1 AI-powered government job alert platform.',
-  },
-  robots: { index: true, follow: true },
+  title: 'Lorry Transport Manager',
+  description: 'Manage your lorry transport business - trips, payments, and more',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
-      <body>
-        <Header />
-        <main className="min-h-screen">{children}</main>
-        <Footer />
+      <body className="bg-gray-50 min-h-screen">
+        <AuthProvider>
+          {children}
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 3000,
+              style: { fontSize: '14px' },
+            }}
+          />
+        </AuthProvider>
       </body>
     </html>
   );
