@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
@@ -13,7 +13,7 @@ enum Role {
 }
 
 model User {
-  id            String         @id @default(cuid())
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
   name          String
   email         String         @unique
   password      String
@@ -24,7 +24,7 @@ model User {
 }
 
 model Lorry {
-  id                 String           @id @default(cuid())
+  id                 String           @id @default(auto()) @map("_id") @db.ObjectId
   registrationNumber String           @unique
   driverName         String
   isActive           Boolean          @default(true)
@@ -34,7 +34,7 @@ model Lorry {
 }
 
 model Crusher {
-  id          String               @id @default(cuid())
+  id          String               @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   contactName String?
   phone       String?
@@ -46,8 +46,8 @@ model Crusher {
 }
 
 model CrusherCreditEntry {
-  id          String   @id @default(cuid())
-  crusherId   String
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  crusherId   String   @db.ObjectId
   crusher     Crusher  @relation(fields: [crusherId], references: [id])
   date        DateTime
   material    String
@@ -60,8 +60,8 @@ model CrusherCreditEntry {
 }
 
 model CrusherPayment {
-  id              String   @id @default(cuid())
-  crusherId       String
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  crusherId       String   @db.ObjectId
   crusher         Crusher  @relation(fields: [crusherId], references: [id])
   date            DateTime
   amount          Float
@@ -72,7 +72,7 @@ model CrusherPayment {
 }
 
 model CommercialClient {
-  id          String             @id @default(cuid())
+  id          String             @id @default(auto()) @map("_id") @db.ObjectId
   companyName String
   contactName String?
   phone       String?
@@ -85,10 +85,10 @@ model CommercialClient {
 }
 
 model CommercialTrip {
-  id               String           @id @default(cuid())
-  clientId         String
+  id               String           @id @default(auto()) @map("_id") @db.ObjectId
+  clientId         String           @db.ObjectId
   client           CommercialClient @relation(fields: [clientId], references: [id])
-  lorryId          String
+  lorryId          String           @db.ObjectId
   lorry            Lorry            @relation(fields: [lorryId], references: [id])
   date             DateTime
   material         String
@@ -104,8 +104,8 @@ model CommercialTrip {
 }
 
 model CommercialPayment {
-  id              String           @id @default(cuid())
-  clientId        String
+  id              String           @id @default(auto()) @map("_id") @db.ObjectId
+  clientId        String           @db.ObjectId
   client          CommercialClient @relation(fields: [clientId], references: [id])
   date            DateTime
   amount          Float
@@ -116,8 +116,8 @@ model CommercialPayment {
 }
 
 model PrivateMember {
-  id        String           @id @default(cuid())
-  userId    String?          @unique
+  id        String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String?          @unique @db.ObjectId
   user      User?            @relation(fields: [userId], references: [id])
   name      String
   phone     String?
@@ -130,10 +130,10 @@ model PrivateMember {
 }
 
 model PrivateTrip {
-  id               String        @id @default(cuid())
-  memberId         String
+  id               String        @id @default(auto()) @map("_id") @db.ObjectId
+  memberId         String        @db.ObjectId
   member           PrivateMember @relation(fields: [memberId], references: [id])
-  lorryId          String
+  lorryId          String        @db.ObjectId
   lorry            Lorry         @relation(fields: [lorryId], references: [id])
   date             DateTime
   material         String
@@ -149,8 +149,8 @@ model PrivateTrip {
 }
 
 model PrivatePayment {
-  id                String        @id @default(cuid())
-  memberId          String
+  id                String        @id @default(auto()) @map("_id") @db.ObjectId
+  memberId          String        @db.ObjectId
   member            PrivateMember @relation(fields: [memberId], references: [id])
   date              DateTime
   amount            Float

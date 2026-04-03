@@ -6,7 +6,7 @@ A full-stack web application for managing a lorry transport business. Track trip
 
 - **Next.js 14** (App Router) with TypeScript
 - **Tailwind CSS** for styling
-- **PostgreSQL** with **Prisma ORM**
+- **MongoDB** with **Prisma ORM**
 - **NextAuth.js** for authentication
 - **Google Drive API** for file storage (slip photos, payment screenshots)
 - **Recharts** for dashboard charts
@@ -19,13 +19,11 @@ A full-stack web application for managing a lorry transport business. Track trip
 npm install
 ```
 
-### 2. Set Up PostgreSQL
+### 2. Set Up MongoDB
 
-Make sure you have PostgreSQL running. Create a database:
-
-```sql
-CREATE DATABASE transport_db;
-```
+You can use either:
+- **MongoDB Atlas** (free cloud): Create a cluster at [mongodb.com/atlas](https://www.mongodb.com/atlas)
+- **Local MongoDB**: Install and run MongoDB locally
 
 ### 3. Configure Environment Variables
 
@@ -38,9 +36,14 @@ cp .env.example .env
 Edit `.env`:
 
 ```
-DATABASE_URL="postgresql://username:password@localhost:5432/transport_db"
+DATABASE_URL="mongodb+srv://username:password@cluster.mongodb.net/transport_db?retryWrites=true&w=majority"
 NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="generate-a-random-secret-string-here"
+```
+
+For local MongoDB, use:
+```
+DATABASE_URL="mongodb://localhost:27017/transport_db"
 ```
 
 ### 4. Set Up Database
